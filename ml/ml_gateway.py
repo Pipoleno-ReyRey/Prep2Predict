@@ -1,24 +1,22 @@
-from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import r2_score
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 import pandas as pd
 import numpy as np
-from ml import regressors_models as rm
-from ml import classifiers_models as cm
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, RandomForestRegressor, GradientBoostingRegressor
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.linear_model import LinearRegression, Ridge, LogisticRegression
 
 def train_models(path: str, y_columns: list[str]):
 
     df = pd.read_csv(path)
     x_train_scaled, x_test_scaled, y_train, y_test = prepare_data(df, y_columns)
-    # try:
-    #     cm.try_models(x_train_scaled, y_train, x_test_scaled, y_test)
-    # except Exception as e:
-    #     rm.try_models(x_train_scaled, y_train, x_test_scaled, y_test)
 
-    return rm.try_models(x_train_scaled, y_train, x_test_scaled, y_test)
+    try:
+        return try_models_regressor(x_train_scaled, y_train, x_test_scaled, y_test)
+    except Exception as e:
+        return try_models_classifier(x_train_scaled, y_train, x_test_scaled, y_test)
 
 
 def prepare_data(df: pd.DataFrame, y_columns):
@@ -30,3 +28,44 @@ def prepare_data(df: pd.DataFrame, y_columns):
     x_test_scaled = StandardScaler().fit_transform(x_test)
     return x_train_scaled, x_test_scaled, y_train, y_test
 
+def try_models_classifier(x_train, y_train, x_test, y_test):
+    tree = DecisionTreeClassifier(random_state=0)
+    svc = SVC(random_state=0)
+    knn = KNeighborsClassifier()
+    rf = RandomForestClassifier(random_state=0)
+    gbr = GradientBoostingClassifier(random_state=0)
+    lr = LogisticRegression(random_state=0)
+
+    models = {"tree": tree, "svc": svc, "knn": knn, "rf": rf, "gbr": gbr, "lr": lr}
+    responses = []
+
+    for m in models.keys():
+        models[m].fit(x_train, y_train)
+        score = models[m].score(x_test, y_test)
+        score = round(score, 2) * 100
+        response = f"el modelo: {m} tuvo un score de {score}"
+        if "el modelo" in response:
+            responses.append(response)
+
+    return responses
+
+def try_models_regressor(x_train, y_train, x_test, y_test):
+    tree = DecisionTreeRegressor(random_state=0)
+    linear = LinearRegression()
+    rf = RandomForestRegressor(random_state=0)
+    rd = Ridge(random_state=0)
+    gbr = GradientBoostingRegressor(random_state=0)
+    lr = LogisticRegression()
+
+    models = {"tree": tree, "linear": linear, "rf": rf, "rd": rd, "gbr": gbr, "lr": lr}
+    responses = []
+
+    for m in models.keys():
+        models[m].fit(x_train, y_train)
+        score = models[m].score(x_test, y_test)
+        score = round(score, 2) * 100
+        response = f"el modelo: {m} tuvo un score de {score}"
+        if "el modelo" in response:
+            responses.append(response)
+
+    return responses
