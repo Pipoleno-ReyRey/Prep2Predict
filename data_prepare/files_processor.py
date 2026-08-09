@@ -24,7 +24,7 @@ async def save_file(file: UploadFile = File(...)):
 
         db.conn.connect()
         new_file = FilesDBModel()
-        new_file.filename = str(path)
+        new_file.path = str(path)
         new_file.save()
         db.conn.close()
 
