@@ -7,15 +7,18 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier,
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LinearRegression, Ridge, LogisticRegression
+from sklearn.utils.multiclass import type_of_target
+from models.models_response_data import ModelResponseData
+import time
 
 def train_models(path: str, y_columns: list[str]):
 
     df = pd.read_csv(path)
     x_train_scaled, x_test_scaled, y_train, y_test = prepare_data(df, y_columns)
 
-    try:
+    if type_of_target(y_train) in ['binary']:
         return try_models_classifier(x_train_scaled, y_train, x_test_scaled, y_test)
-    except Exception as e:
+    else:
         return try_models_regressor(x_train_scaled, y_train, x_test_scaled, y_test)
 
 
@@ -38,18 +41,24 @@ def try_models_classifier(x_train, y_train, x_test, y_test):
     knn = KNeighborsClassifier()
     rf = RandomForestClassifier(random_state=0)
     gbr = GradientBoostingClassifier(random_state=0)
-    lr = LinearRegression()
 
-    models = {"tree": tree, "svc": svc, "knn": knn, "rf": rf, "gbr": gbr, "lr": lr}
+    models = {"DecisionTreeClassifier": tree,
+              "SVC": svc,
+              "KNeighborsClassifier": knn,
+              "RandomForestClassifier": rf,
+              "GradientBoostingClassifier": gbr}
     responses = []
 
     for m in models.keys():
+        start = time.time()
         models[m].fit(x_train, y_train)
         score = models[m].score(x_test, y_test)
+        end = time.time()
         score = round(score, 2) * 100
         response = f"el modelo: {m} tuvo un score de {score}"
-        if "el modelo" in response:
-            responses.append(response)
+        model_response = ModelResponseData(model_name=m, time=(round(end - start, 2)), score=score)
+        responses.append(model_response)
+
 
     return responses
 
@@ -62,15 +71,23 @@ def try_models_regressor(x_train, y_train, x_test, y_test):
     gbr = GradientBoostingRegressor(random_state=0)
     lr = LogisticRegression()
 
-    models = {"tree": tree, "linear": linear, "rf": rf, "rd": rd, "gbr": gbr, "lr": lr}
+    models = {"DecisionTreeRegressor": tree,
+              "LinearRegression": linear,
+              "RandomForestRegressor": rf,
+              "Ridge": rd,
+              "GradientBoostingRegressor": gbr,
+              "LogisticRegression": lr}
     responses = []
 
     for m in models.keys():
+        start = time.time()
         models[m].fit(x_train, y_train)
         score = models[m].score(x_test, y_test)
+        end = time.time()
         score = round(score, 2) * 100
         response = f"el modelo: {m} tuvo un score de {score}"
-        if "el modelo" in response:
-            responses.append(response)
+        model_response = ModelResponseData(model_name=m, time=(round(end - start, 2)), score=score)
+        responses.append(model_response)
 
     return responses
+
