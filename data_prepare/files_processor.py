@@ -35,15 +35,21 @@ def clean_nulls_columns(csv_path: str, nulls: dict):
 
     df = pd.read_csv(csv_path)
 
+    response = {}
     for c in nulls.keys():
         if nulls[c] == 'drop':
             df = df.dropna(subset=[c])
+            response[c] = "Registros nulos borrados"
 
         elif type(nulls[c]) == dict:
             if is_string_dtype(df[c]):
                 df[c] = df[c].fillna(nulls[c]["default_value"])
+                response[c] = f"Registros nulos reasignados a: {nulls[c]["default_value"]}"
             elif is_numeric_dtype(df[c]):
                 df[c] = df[c].fillna(nulls[c]["default_value"])
+                response[c] = f"Registros nulos reasignados a: {nulls[c]["default_value"]}"
 
     df.to_csv(csv_path, index=False, encoding="utf-8")
     ci.convert_columns_to_int(csv_path, list(df.columns))
+
+    return response
