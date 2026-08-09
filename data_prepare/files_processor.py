@@ -6,6 +6,8 @@ import shutil
 import csv
 from fastapi import UploadFile, File
 from data_prepare import convert_int as ci
+import db_connection as db
+from models.files_db_model import *
 
 async def save_file(file: UploadFile = File(...)):
     try:
@@ -19,6 +21,12 @@ async def save_file(file: UploadFile = File(...)):
         for column in columns:
             if  df[column].isnull().any():
                 nulls_columns.append(column)
+
+        db.conn.connect()
+        new_file = FilesDBModel()
+        new_file.filename = str(path)
+        new_file.save()
+        db.conn.close()
 
         return {
             "path": str(path),
