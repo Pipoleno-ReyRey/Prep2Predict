@@ -4,7 +4,7 @@ from db_connection import conn
 
 class FilesDBModel(Model):
     id: int = PrimaryKeyField()
-    filename: str = CharField(max_length=1000, unique=True)
+    path: str = CharField(max_length=1000, unique=True)
     uploaded_at: datetime.datetime = DateField(default=datetime.datetime.now)
 
     class Meta:
