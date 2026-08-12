@@ -29,9 +29,10 @@ def prepare_data(df: pd.DataFrame, y_columns):
     if len(y.shape) == 2:
         y = y.squeeze()
 
+    scaler = StandardScaler()
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
-    x_train_scaled = StandardScaler().fit_transform(x_train)
-    x_test_scaled = StandardScaler().fit_transform(x_test)
+    x_train_scaled = scaler.fit_transform(x_train)
+    x_test_scaled = scaler.transform(x_test)
     return x_train_scaled, x_test_scaled, y_train, y_test
 
 
@@ -55,7 +56,6 @@ def try_models_classifier(x_train, y_train, x_test, y_test):
         score = models[m].score(x_test, y_test)
         end = time.time()
         score = round(score, 2) * 100
-        response = f"el modelo: {m} tuvo un score de {score}"
         model_response = ModelResponseData(model_name=m, time=(round(end - start, 2)), score=score)
         responses.append(model_response)
 
@@ -66,7 +66,7 @@ def try_models_classifier(x_train, y_train, x_test, y_test):
 def try_models_regressor(x_train, y_train, x_test, y_test):
     tree = DecisionTreeRegressor(random_state=0)
     linear = LinearRegression()
-    rf = RandomForestRegressor(random_state=0)
+    rf = RandomForestRegressor(random_state=0, max_depth=4, n_estimators=100)
     rd = Ridge(random_state=0)
     gbr = GradientBoostingRegressor(random_state=0)
     lr = LogisticRegression()
