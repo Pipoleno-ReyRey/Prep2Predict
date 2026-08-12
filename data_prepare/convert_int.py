@@ -9,16 +9,16 @@ def convert_columns_to_int(path: str, columns: list[str]):
 
     try:
         file = FilesDBModel.get(FilesDBModel.path == path)
-        print(columns)
-        with conn.atomic() as t:
+        columns_groups = {}
+        with conn.atomic():
             df = pd.read_csv(path)
             for col in columns:
                 col_type = is_string_dtype(df[col])
                 if col_type:
-                    print(col)
                     properties = []
                     count = df[col].groupby(df[col]).count()
                     items = list(count.index)
+                    columns_groups[col] = items
                     dict_items = {}
                     for i, c in enumerate(items, start=1):
                         propertie = PropertiesDbModel()
@@ -33,5 +33,6 @@ def convert_columns_to_int(path: str, columns: list[str]):
                     df[col] = df[col].map(dict_items)
 
         df.to_csv(path, index=False, encoding="utf-8")
+        return columns_groups
     except Exception as e:
         print(e)

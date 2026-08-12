@@ -55,6 +55,6 @@ def clean_nulls_columns(csv_path: str, nulls: dict):
                 response[c] = f"Registros nulos reasignados a: {nulls[c]["default_value"]}"
 
     df.to_csv(csv_path, index=False, encoding="utf-8")
-    ci.convert_columns_to_int(csv_path, list(df.columns))
+    groups_columns = ci.convert_columns_to_int(csv_path, list(df.columns))
 
-    return response
+    return {"response": response, "groups_columns": groups_columns}
